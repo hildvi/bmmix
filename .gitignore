@@ -1,4 +1,18 @@
-.Rproj.user
+# R specific
 .Rhistory
 .RData
+.Rproj.user
 .Ruserdata
+.DS_Store
+
+# Package build files
+.Rcheck/
+*.tar.gz
+
+# RStudio files
+.Rproj.user/
+*.Rproj
+
+# Documentation artifacts
+man/*.Rd
+NAMESPACE
