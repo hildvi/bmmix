@@ -28,7 +28,7 @@
 #' 
 #' ## Simulate data
 #' set.seed(11)
-#' nrep <- 1000
+#' nrep <- 10000
 #' new_seeds <- sample(1:(10*nrep),nrep)
 #' sigma2 <- 1.5
 #' sigma2u <- 0.75
@@ -57,7 +57,7 @@
 #' id = as.vector(ID))
 #' 
 #' bmlmer_res <- bmlmer(formula = bmlmerform,data = mixdata,
-#'                       nsim = 5000)
+#'                       nsim = 5000,nu1=0.0001,nu2=0.0001,beta0=NULL,nu0=0.0001)
 #'
 #' lme4_res <- confint(lme4::lmer(formula = bmlmerform,data = mixdata))
 #' 
