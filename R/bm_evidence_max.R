@@ -1,0 +1,83 @@
+#' @title Bayesian Analyses of Simple and Balanced Linear Mixed-Effects Models. 
+#' @description Bayesian analysis of simple linear mixed-effects model (LMM) applied 
+#' to balanced data, via a closed form posterior distribution.
+#' @details See Gangsei & Vinje ... for details.  
+#' @usage bm_evidence_max(mu1,mu2,beta0,n,w,Q1,Q2,Mn)
+#' @param a bla bla
+#' @return bla bla 
+#' 
+#' @note bla bla, use function nlm()
+#' 
+#' @references Gangsei, L.E.& Vinje, H. 2025. A closed form solution for 
+#' Bayesian analysis of a simple linear mixed model.
+#' 
+#'
+#' @author Hilde Vinje\cr
+#' hilde.vinje@@nmbu.no\cr
+#' +47 959 01 450 
+#' 
+#' Lars Erik Gangsei\cr
+#' lars.erik.gangsei@@vetinst.no\cr
+#' +47 950 61 231
+#' 
+#' @import hypergeo
+#' 
+#' @examples
+#' \dontrun{
+#' 
+#' }
+#'
+#'
+#'
+#' @export
+# Probability density distribution (pdf)
+bm_evidence_max <- function(mu1=0.5,mu2=1,beta0=NULL,beta_hat,n,w,Q1,Q2,Mn,
+                            nu_start = rep(1,3),nu_max = NULL,nu_min = NULL)
+{
+  # Set beta0 till 0 if not defined before
+  if(is.null(beta0)){beta0 <- as.matrix(rep(0,dim(Mn)[1]))}
+  if(is.null(nu_start)){nu_start <- rep(1,3)}
+  if(is.null(nu_max)){nu_max <- rep(n/2,3)}
+  if(is.null(nu_min)){nu_min <- rep(0,3)}
+  
+  # Function to minimze the logarithm of log likelihood.
+  ev_min <- function(nu,mu1,mu2,beta0,beta_hat,n,w,Q1,Q2,Mn,
+                     nu_min = rep(0,3),nu_max=rep(Inf,3))
+  {
+    if(any(nu<nu_min)&&any(nu>nu_max)){res <- -10^50
+    }else{
+     Q3 <- (nu[3]/(n+nu[3]))*t(beta_hat-beta0)%*%(n*Mn)%*%(beta_hat-beta0)
+     kappa1 <- (Q1+Q2+2*nu[2]/mu2+w*Q3)/2
+     kappa2 <- (Q2+w*Q3)/2
+     phi1_post <- n*w/2 + nu[2]
+     phi2_post <- nu[1]*mu1
+     phi3_post <- n/2 + nu[1]
+     p <- dim(Mn)[1]
+     
+     res <- (-(n*w/2)*log(2*pi)
+              +log(Re(hypergeo::hypergeo(phi1_post,phi2_post,phi3_post,kappa2/kappa1)))
+              -(phi1_post)*log(kappa1)
+              +(p/2)*(log(nu[3])-log(n+nu[3]))
+              +nu[2]*(log(nu[2])-log(mu2))
+              +lgamma(phi1_post)
+              -lgamma(nu[2])
+              -lgamma(phi3_post)
+              +lgamma(phi3_post-phi2_post)
+              +lgamma(nu[1])
+              -lgamma(nu[1]*(1-mu1)))
+     if(is.na(res)||abs(res)==Inf){res <- -10^50}
+    }
+     return(-res)
+  }
+  
+  # Use the non-linar optimizer nlm() to solve for nu
+  #res <- nlm(f = ev_min,p = nu_start,mu1=mu1,mu2=mu2,beta0=beta0,
+  #           beta_hat = beta_hat,n=n,w=w,Q1=Q1,Q2=Q2,Mn = Mn,nu_min = nu_min,
+  #           nu_max = nu_max)
+  res <- optim(par = nu_start,fn = ev_min,gr = NULL,
+               mu1=mu1,mu2=mu2,beta0=beta0,beta_hat = beta_hat,n=n,w=w,Q1=Q1,
+               Q2=Q2,Mn = Mn,method = "L-BFGS-B",nu_min = nu_min,nu_max = nu_max,
+               lower = nu_min,upper = nu_max)
+  print(res)
+  return(res)
+}

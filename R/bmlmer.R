@@ -49,7 +49,7 @@
 #' set.seed(new_seeds[i])
 #' X <- cbind(1,matrix(rnorm(n*(p-1)),n,p-1))
 #' U <- matrix(rep(rnorm(n,0,sqrt(sigma2u)),w),n,w,byrow=FALSE)
-#' E <- matrix(rnorm(n*w),n,w)
+#' E <- matrix(rnorm(n*w,0,sqrt(sigma2)),n,w)
 #' Y <- matrix(X%*%beta,n,w,byrow=FALSE) + U + E
 #' 
 #' mixdata <- data.frame(y = as.vector(Y),
@@ -57,7 +57,7 @@
 #' id = as.vector(ID))
 #' 
 #' bmlmer_res <- bmlmer(formula = bmlmerform,data = mixdata,
-#'                       nsim = 5000,nu1=0.0001,nu2=0.0001,beta0=NULL,nu0=0.0001)
+#'                       nsim = 5000,nu1=0.01,nu2=0.01,beta0=NULL,nu0=0.01)
 #'
 #' lme4_res <- confint(lme4::lmer(formula = bmlmerform,data = mixdata))
 #' 
@@ -76,9 +76,11 @@
 #'
 #' @export
 # Probability density distribution (pdf)
-bmlmer <- function(formula, data,nu1=1,mu1=1,nu2=1,mu2=1,
-                   beta0=NULL,nu0=1,Upsilon0=NULL,nsim = 10^4,
-                   alpha = 0.05,simreturn = FALSE)
+bmlmer <- function(formula,data,nu1=1,mu1=0.5,nu2=1,mu2=1,
+                   beta0=NULL,nu3=1,Upsilon0=NULL,nsim = 10^4,
+                   alpha = 0.05,simreturn = FALSE,
+                   empirical_bayes = FALSE,nu_start = NULL,
+                   nu_max = NULL,nu_min = NULL)
 {
   # Split in random terms and fixed terms
   fixed_form <- lme4::nobars(formula)
@@ -113,7 +115,6 @@ bmlmer <- function(formula, data,nu1=1,mu1=1,nu2=1,mu2=1,
   
   Mn <- t(XX)%*%XX/nn
   
-  if(is.null(Upsilon0)){Upsilon0 <- nu0*Mn}
   if(is.null(beta0)){beta0 <- matrix(0,dim(XX)[2],1)}
   
   # Get different quadratic sums
@@ -122,14 +123,33 @@ bmlmer <- function(formula, data,nu1=1,mu1=1,nu2=1,mu2=1,
   beta_hat <- as.matrix(coef(fixed_mod))
   QQ2 <- ww*sum((yy_bar - XX%*%beta_hat)^2)
   
-  QQ3 <- t(beta_hat-beta0)%*%(n*Mn)%*%solve(n*Mn + Upsilon0)%*%Upsilon0%*%(beta_hat-beta0)
+  # Use empirical Bayes to set nu-parameters 
+  if(empirical_bayes == TRUE)
+  {
+    eb_res <- bm_evidence_max(mu1=mu1,mu2=mu2,beta0=beta0,
+                              beta_hat=beta_hat,n=nn,w=ww,Q1=QQ1,Q2=QQ2,
+                              Mn=Mn,nu_start = nu_start,nu_max = nu_max,
+                              nu_min = nu_min)
+    #nu1 <- eb_res$estimate[1]
+    #nu2 <- eb_res$estimate[2]
+    #nu3 <- eb_res$estimate[3]
+    nu1 <- eb_res$par[1]
+    nu2 <- eb_res$par[2]
+    nu3 <- eb_res$par[3]
+  }
+  
+  if(is.null(Upsilon0)){Upsilon0 <- nu3*Mn}
+  QQ3 <- t(beta_hat-beta0)%*%(nn*Mn)%*%solve(nn*Mn + Upsilon0)%*%Upsilon0%*%(beta_hat-beta0)
   
   # Get posterior hyperparameters for extended beta distribution of 3th kind
-  kappa1 <- (QQ1 + QQ2 + 2*nu2*mu2 + ww*QQ3)/2
-  kappa2 <- (QQ1 + ww*QQ3)/2
-  phi1_post <- nn*ww/2 + nu2*(mu2^2)
-  phi2_post <- nu2*(mu2^2) + nu1*mu1
-  phi3_post <- nn/2 + nu1 + nu2*(mu2^2)
+  kappa1 <- as.numeric((QQ1 + QQ2 + 2*nu2/mu2 + ww*QQ3)/2)
+  kappa2 <- as.numeric((QQ2 + ww*QQ3)/2)
+  #print(kappa2/kappa1)
+  phi1_post <- nn*ww/2 + nu2
+  phi2_post <- nu1*mu1
+  phi3_post <- nn/2 + nu1 
+  
+  #print(c(phi1_post,phi2_post,phi3_post,kappa1,kappa2))
   
   # Sample from the posterior for delta
   delta_post <- rbeta3ext(n = nsim,shape1 = phi1_post,shape2 = phi2_post,
@@ -146,19 +166,24 @@ bmlmer <- function(formula, data,nu1=1,mu1=1,nu2=1,mu2=1,
   
   
   # Draw samples for beta
-  beta_weights <- sqrt((1/(ww*(1-delta_post)))*sigma2inv_post)
+  beta_weights <- sqrt(1/(ww*(1-delta_post)*sigma2inv_post))
   
   Error0_post <- (mvtnorm::rmvnorm(n = nsim, mean = rep(0,dim(XX)[2]),
                                   sigma = solve(nn*Mn + Upsilon0))*
                     matrix(beta_weights,nsim,dim(XX)[2],byrow = FALSE))
   
-  beta_tilde <- solve(n*Mn + Upsilon0)%*%((n*Mn)%*%beta_hat+Upsilon0%*%beta0)
+  beta_tilde <- solve(nn*Mn + Upsilon0)%*%((nn*Mn)%*%beta_hat+Upsilon0%*%beta0)
   
   Beta_post <- matrix(beta_tilde,nsim,dim(XX)[2],byrow = TRUE) + Error0_post
   
-  # Send the result in an apropriate way
-  ResMat <- cbind(sigma2_post,sigma2u_post,Beta_post)
-  colnames(ResMat) <- c('sigma2','sigma2u',rownames(beta_hat))
+  # Send the result in an appropriate way
+  ResMat <- cbind(delta_post,sigma2_post,sigma2u_post,Beta_post)
+  colnames(ResMat) <- c('delta','sigma2','sigma2u',rownames(beta_hat))
+  
+  # Find and return approximate posteriors
+  pdf_s <- lapply(as.data.frame(ResMat),density)
+  
+  posteriors <- lapply(pdf_s,function(x){approxfun(x$y,x$x, rule = 2)})
   
   res <- list(Mean = colMeans(ResMat),
               Quantiles = apply(ResMat,2,quantile,
@@ -169,6 +194,8 @@ bmlmer <- function(formula, data,nu1=1,mu1=1,nu2=1,mu2=1,
   if(simreturn == TRUE){res$simulations <- data.frame(sigma2 = sigma2_post,
                                                 sigma2u = sigma2u_post,
                                                 Beta = I(Beta_post))}
+  
+  if(empirical_bayes == TRUE){res$eb_nu <- eb_res$par}
   
   return(res)
 }
