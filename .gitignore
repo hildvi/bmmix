@@ -14,5 +14,3 @@
 *.Rproj
 
 # Documentation artifacts
-man/*.Rd
-NAMESPACE
