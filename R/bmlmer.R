@@ -27,14 +27,14 @@
 #' ## Simulate data
 #' set.seed(11)
 #' nrep <- 10000
+#' w <- 4
+#' p <- 3
+#' n <- 15
 #' new_seeds <- sample(1:(10*nrep),nrep)
 #' sigma2 <- 1.5
 #' sigma2u <- 0.75
 #' beta <- as.matrix(rnorm(p))
 #' par_vec <- c(sigma2,sigma2u,as.vector(beta))
-#' w <- 4
-#' p <- 3
-#' n <- 15
 #' bmlmerform <- formula(y ~ X + (1|id))
 #' ID <- matrix(rep(1:n,w),n,w,byrow=FALSE)
 #' 
@@ -55,7 +55,7 @@
 #' id = as.vector(ID))
 #' 
 #' bmlmer_res <- bmlmer(formula = bmlmerform,data = mixdata,
-#'                       nsim = 5000,nu1=0.01,nu2=0.01,beta0=NULL,nu0=0.01)
+#'                       nsim = 5000,nu1=0.01,nu2=0.01,beta0=NULL,nu3=0.01)
 #'
 #' lme4_res <- confint(lme4::lmer(formula = bmlmerform,data = mixdata))
 #' 

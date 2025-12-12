@@ -30,13 +30,13 @@
 #' @export
 # Probability density distribution (pdf)
 bm_evidence_max <- function(mu1=0.5,mu2=1,beta0=NULL,beta_hat,n,w,Q1,Q2,Mn,
-                            nu_start = rep(1,3),nu_max = NULL,nu_min = NULL)
+                            nu_start = NULL,nu_max = NULL,nu_min = NULL)
 {
   # Set beta0 till 0 if not defined before
   if(is.null(beta0)){beta0 <- as.matrix(rep(0,dim(Mn)[1]))}
-  if(is.null(nu_start)){nu_start <- rep(1,3)}
+  if(is.null(nu_start)){nu_start <- c(2,1,1)}
   if(is.null(nu_max)){nu_max <- rep(n/2,3)}
-  if(is.null(nu_min)){nu_min <- rep(0,3)}
+  if(is.null(nu_min)){nu_min <- c(2,0,0)}
   
   # Function to minimze the logarithm of log likelihood.
   ev_min <- function(nu,mu1,mu2,beta0,beta_hat,n,w,Q1,Q2,Mn,
@@ -76,6 +76,6 @@ bm_evidence_max <- function(mu1=0.5,mu2=1,beta0=NULL,beta_hat,n,w,Q1,Q2,Mn,
                mu1=mu1,mu2=mu2,beta0=beta0,beta_hat = beta_hat,n=n,w=w,Q1=Q1,
                Q2=Q2,Mn = Mn,method = "L-BFGS-B",nu_min = nu_min,nu_max = nu_max,
                lower = nu_min,upper = nu_max)
-  print(res)
+  #print(res)
   return(res)
 }
