@@ -86,8 +86,15 @@ for(i in 1:nrep)
 }
 
 ## Table for manuscript
-colSums((bayes_eval[seq(1,2*nrep,by = 2),-7]<Par_mat[1:i,])&
-          (eval[seq(2,dim(eval)[1],by = 4),-7]>Par_mat[1:i,]))/i
+rbind(colSums((bayes_eval[seq(1,2*nrep,by = 2),-7]<Par_mat[1:i,])&
+          (bayes_eval[seq(2,2*nrep,by = 2),-7]>Par_mat[1:i,]))/nrep,
+      apply(bayes_eval[seq(2,2*nrep,by = 2),-7]-
+              bayes_eval[seq(1,2*nrep,by = 2),-7],2,mean),
+      colSums((freq_eval[seq(1,2*nrep,by = 2),-7]<Par_mat[1:i,])&
+                (bayes_eval[seq(2,2*nrep,by = 2),-7]>Par_mat[1:i,]))/nrep,
+      apply(bayes_eval[seq(2,2*nrep,by = 2),-7]-
+              bayes_eval[seq(1,2*nrep,by = 2),-7],2,mean))
+
 
 #print(c(i,nrep))
 if(i %in% seq(100,nrep,by = 100))
