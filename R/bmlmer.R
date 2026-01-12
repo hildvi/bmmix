@@ -2,7 +2,7 @@
 #' @description Bayesian analysis of simple linear mixed-effects model (LMM) applied 
 #' to balanced data, via a closed form posterior distribution.
 #' @details See Gangsei & Vinje ... for details.  
-#' @usage bmlmer(formula, data, nu1,mu1,nu2,mu2,beta0,nu0,Upsilon0)
+#' @usage bmlmer(mod_formula, data, nu1,mu1,nu2,mu2,beta0,nu0,Upsilon0)
 #' @param a bla bla
 #' @return bla bla 
 #' 
