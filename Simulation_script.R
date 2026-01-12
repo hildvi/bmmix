@@ -37,9 +37,9 @@ Par_mat <- matrix(par_vec,nrep,length(par_vec),byrow = TRUE)
 bmlmerform <- formula(y ~ X + (1|id))
 ID <- matrix(rep(1:n,w),n,w,byrow=FALSE)
 
-bayes_eval <- freq_eval <- matrix(0,0,7, dimnames = 
+bayes_eval <- freq_eval <- matrix(NA,0,6, dimnames = 
                  list(NULL,
-              c('delta','sigma2','sigma2u','(intercept)','x1','x2','method')))
+              c('delta','sigma2','sigma2u','(intercept)','x1','x2')))
 
 
 
@@ -70,69 +70,52 @@ for(i in 1:nrep)
                        nu_min = c(2,0,0),nu_max = c(2.0001,10,10))
   
   #print(bmlmer_res$eb_nu)
-  bayes_eval <- rbind(bayes_eval,cbind(cbind(bmlmer_res$Quantiles[c(1,3),],1))) #Store results
+  bayes_eval <- rbind(bayes_eval,
+                      rbind(bmlmer_res$Quantiles[c(1,3),],
+                            bmlmer_res$Mean)) #Store results
 
 ### Get results from standard frequentist approach
-  lme4_res <- confint(lme4::lmer(formula = bmlmerform,data = mixdata))
+  freq_mod <- lme4::lmer(formula = bmlmerform,data = mixdata)
+  lme4_res <- confint(freq_mod)
   lme4_res[1:2,] <- lme4_res[1:2,]^2 
+  
   if(rownames(lme4_res)[1]==".sig01"){lme4_res[1:2,] <- lme4_res[c(2,1),]}
+  
+  lme4_res <- t(rbind(NA,cbind(lme4_res,
+                    c(as.data.frame(lme4::VarCorr(freq_mod))$vcov[c(2,1)],
+                      summary(freq_mod)$coef[,1]))))
   
   #eval[1,] <- eval[1,] + ((bmlmer_res$Quantiles[1,] < par_vec)&
   #                          (bmlmer_res$Quantiles[3,] > par_vec))
   
   
-  lme4_res <- t(rbind(NA,lme4_res,2))
+  #lme4_res <- t(rbind(NA,lme4_res,2))
   freq_eval <- rbind(freq_eval,lme4_res)# store results
 }
 
 ## Table for manuscript
-rbind(colSums((bayes_eval[seq(1,2*nrep,by = 2),-7]<Par_mat[1:i,])&
-          (bayes_eval[seq(2,2*nrep,by = 2),-7]>Par_mat[1:i,]))/nrep,
-      apply(bayes_eval[seq(2,2*nrep,by = 2),-7]-
-              bayes_eval[seq(1,2*nrep,by = 2),-7],2,mean),
-      colSums((freq_eval[seq(1,2*nrep,by = 2),-7]<Par_mat[1:i,])&
-                (bayes_eval[seq(2,2*nrep,by = 2),-7]>Par_mat[1:i,]))/nrep,
-      apply(bayes_eval[seq(2,2*nrep,by = 2),-7]-
-              bayes_eval[seq(1,2*nrep,by = 2),-7],2,mean))
+Tab1 <- data.frame(
+      Real_value = par_vec,
+      Bayes_OK_per = colSums((bayes_eval[seq(1,3*nrep,by = 3),-7]<Par_mat)&
+          (bayes_eval[seq(2,3*nrep,by = 3),-7]>Par_mat))/nrep,
+      Bayes_CI_widh = apply(bayes_eval[seq(2,3*nrep,by = 3),-7]-
+              bayes_eval[seq(1,3*nrep,by = 3),-7],2,mean),
+      Bayes_MSE = apply(bayes_eval[seq(3,3*nrep,by = 3),-7]-
+                          Par_mat,2,var),
+      Bayes_bias = apply(bayes_eval[seq(3,3*nrep,by = 3),-7]-
+                           Par_mat,2,mean),
+      Freq_OK_per =colSums((freq_eval[seq(1,3*nrep,by = 3),-7]<Par_mat)&
+                (freq_eval[seq(2,3*nrep,by = 3),-7]>Par_mat))/nrep,
+      Bayes_CI_widh = apply(freq_eval[seq(2,3*nrep,by = 3),-7]-
+              freq_eval[seq(1,3*nrep,by = 3),-7],2,mean),
+      Freq_MSE = apply(freq_eval[seq(3,3*nrep,by = 3),-7]-
+                         Par_mat,2,var),
+      Freq_bias = apply(freq_eval[seq(3,3*nrep,by = 3),-7]-
+                           Par_mat,2,mean))
 
 
-#print(c(i,nrep))
-if(i %in% seq(100,nrep,by = 100))
-{
-  print('Bayes')
-  print(rbind(
-    ,
-    apply(eval[seq(2,dim(eval)[1],by = 4),-7]-eval[seq(1,dim(eval)[1],by = 4),-7],2,mean)))
-  
-  print('LME4')
-  print(rbind(
-    colSums((eval[seq(3,dim(eval)[1],by = 4),-7]<Par_mat[1:i,])&
-              (eval[seq(4,dim(eval)[1],by = 4),-7]>Par_mat[1:i,]))/i,
-    apply(eval[seq(4,dim(eval)[1],by = 4),-7]-eval[seq(3,dim(eval)[1],by = 4),-7],2,mean)))
-}
-
-
-plot(eval[seq(1,dim(eval)[1],by = 4),1],ylim = c(0,1),pch = '_')
-points(eval[seq(2,dim(eval)[1],by = 4),1],ylim = c(0,1),pch = '_')
-abline(h = delta,col = 'red')
-plot(eval[seq(1,dim(eval)[1],by = 4),2],ylim = c(0,5),pch = '_')
-points(eval[seq(2,dim(eval)[1],by = 4),2],ylim = c(0,1),pch = '_')
-abline(h = sigma2,col = 'red')
-plot(eval[seq(1,dim(eval)[1],by = 4),3],ylim = c(0,5),pch = '_')
-points(eval[seq(2,dim(eval)[1],by = 4),3],ylim = c(0,1),pch = '_')
-abline(h = sigma2u,col = 'red')
-
-Par_mat <- matrix(par_vec,nrep,6,byrow=TRUE)
-
-rbind(
-colSums((eval[seq(1,dim(eval)[1],by = 4),-7]<Par_mat)&
-          (eval[seq(2,dim(eval)[1],by = 4),-7]>Par_mat))/nrep,
-apply(eval[seq(2,dim(eval)[1],by = 4),-7]-eval[seq(1,dim(eval)[1],by = 4),-7],2,mean))
-
-rbind(
-colSums((eval[seq(3,dim(eval)[1],by = 4),-7]<Par_mat)&
-          (eval[seq(4,dim(eval)[1],by = 4),-7]>Par_mat))/nrep,
-apply(eval[seq(4,dim(eval)[1],by = 4),-7]-eval[seq(3,dim(eval)[1],by = 4),-7],2,mean))
+### Write table in Latex format
+xtable::xtable(Tab1)
 
 
 
