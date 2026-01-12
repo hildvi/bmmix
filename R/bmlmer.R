@@ -74,15 +74,15 @@
 #'
 #' @export
 # Probability density distribution (pdf)
-bmlmer <- function(formula,data,nu1=1,mu1=0.5,nu2=1,mu2=1,
+bmlmer <- function(mod_form,data,nu1=1,mu1=0.5,nu2=1,mu2=1,
                    beta0=NULL,nu3=1,Upsilon0=NULL,nsim = 10^4,
                    alpha = 0.05,simreturn = FALSE,
                    empirical_bayes = FALSE,nu_start = NULL,
                    nu_max = NULL,nu_min = NULL)
 {
   # Split in random terms and fixed terms
-  fixed_form <- lme4::nobars(formula)
-  random_terms <- lme4::findbars(formula)
+  fixed_form <- reformulas::nobars(mod_form)
+  random_terms <- reformulas::findbars(mod_form)
   
   grouping_factors <- sapply(random_terms, function(term) {
     as.character(term[[3]])})
