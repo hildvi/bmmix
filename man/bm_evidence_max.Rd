@@ -37,9 +37,7 @@ Bayesian analysis of a simple linear mixed model.
 \author{
 Hilde Vinje\cr
 hilde.vinje@nmbu.no\cr
-+47 959 01 450
 
 Lars Erik Gangsei\cr
 lars.erik.gangsei@vetinst.no\cr
-+47 950 61 231
 }

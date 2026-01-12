@@ -10,8 +10,8 @@ rm(list = ls())
 #devtools::install_git(url = 'https://github.com/hildvi/beta3ext')
 
 
-library(beta3ext)
-library(bmmix)
+require(beta3ext)
+require(bmmix)
 
 ## Set dimensions and parameters in model
 
