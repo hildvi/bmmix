@@ -29,10 +29,8 @@ rm(list = ls())
 
 ## Load the beta3ext and bmmix packages
 #devtools::install_git(url = 'https://github.com/hildvi/bmmix')
-#devtools::install_git(url = 'https://github.com/hildvi/beta3ext')
 
 
-require(beta3ext)
 require(bmmix)
 
 ## Set dimensions and parameters in model
@@ -61,7 +59,7 @@ ID <- matrix(rep(1:n,w),n,w,byrow=FALSE)
 
 bayes_eval <- freq_eval <- matrix(NA,0,6, dimnames = 
                                     list(NULL,
-                                         c('delta','sigma2','sigma2u','(intercept)','x1','x2')))
+                      c('delta','sigma2','sigma2u','(intercept)','x1','x2')))
 
 
 

@@ -18,7 +18,7 @@
 #' Lars Erik Gangsei\cr
 #' lars.erik.gangsei@@vetinst.no\cr
 #' 
-#' @import hypergeo
+#' @import gsl
 #' 
 #' @examples
 #' \dontrun{
@@ -49,18 +49,18 @@ bm_evidence_max <- function(mu1=0.5,mu2=1,beta0=NULL,beta_hat,n,w,Q1,Q2,Mn,
      kappa2 <- (Q2+w*Q3)/2
      phi1_post <- n*w/2 + nu[2]
      phi2_post <- nu[1]*mu1
-     phi3_post <- n/2 + nu[1]
+     phi3_post <- n/2 + nu[1]*(1-mu1)
      p <- dim(Mn)[1]
      
      res <- (-(n*w/2)*log(2*pi)
-              +log(Re(hypergeo::hypergeo(phi1_post,phi2_post,phi3_post,kappa2/kappa1)))
+              +log(gsl::hyperg_2F1(phi2_post,phi1_post,phi3_post+phi2_post,kappa2/kappa1))
               -(phi1_post)*log(kappa1)
               +(p/2)*(log(nu[3])-log(n+nu[3]))
               +nu[2]*(log(nu[2])-log(mu2))
               +lgamma(phi1_post)
               -lgamma(nu[2])
-              -lgamma(phi3_post)
-              +lgamma(phi3_post-phi2_post)
+              -lgamma(phi3_post+phi2_post)
+              +lgamma(phi3_post)
               +lgamma(nu[1])
               -lgamma(nu[1]*(1-mu1)))
      if(is.na(res)||abs(res)==Inf){res <- -10^50}

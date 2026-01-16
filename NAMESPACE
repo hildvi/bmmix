@@ -2,6 +2,7 @@
 
 export(bm_evidence_max)
 export(bmlmer)
-import(hypergeo)
+import(gbeta)
+import(gsl)
 import(lme4)
 import(mvtnorm)

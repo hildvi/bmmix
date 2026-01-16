@@ -20,6 +20,7 @@
 #' 
 #' @import lme4
 #' @import mvtnorm
+#' @import gbeta
 #' 
 #' @examples
 #' \dontrun{
@@ -28,10 +29,8 @@
 #'
 #' ## Load the beta3ext and bmmix packages
 #' #devtools::install_git(url = 'https://github.com/hildvi/bmmix')
-#' #devtools::install_git(url = 'https://github.com/hildvi/beta3ext')
 #' 
 #' 
-#' require(beta3ext)
 #' require(bmmix)
 #' 
 #' ## Set dimensions and parameters in model
@@ -60,7 +59,7 @@
 #' 
 #' bayes_eval <- freq_eval <- matrix(NA,0,6, dimnames = 
 #'                                     list(NULL,
-#'                                          c('delta','sigma2','sigma2u','(intercept)','x1','x2')))
+#'                       c('delta','sigma2','sigma2u','(intercept)','x1','x2')))
 #' 
 #' 
 #' 
@@ -210,13 +209,13 @@ bmlmer <- function(mod_form,data,nu1=1,mu1=0.5,nu2=1,mu2=1,
   #print(kappa2/kappa1)
   phi1_post <- nn*ww/2 + nu2
   phi2_post <- nu1*mu1
-  phi3_post <- nn/2 + nu1 
+  phi3_post <- nn/2 + nu1*(1-mu1) 
   
   #print(c(phi1_post,phi2_post,phi3_post,kappa1,kappa2))
   
   # Sample from the posterior for delta
-  delta_post <- rbeta3ext(n = nsim,shape1 = phi1_post,shape2 = phi2_post,
-                          shape3 = phi3_post,delta = kappa2/kappa1)
+  delta_post <- rgbeta(n = nsim,c = phi2_post, d = phi3_post,kappa = phi1_post,
+                       tau = 1- (kappa2/kappa1))
   
   # Hyperparameters for 1/sigma2
   shape1_post <- phi1_post
@@ -244,9 +243,9 @@ bmlmer <- function(mod_form,data,nu1=1,mu1=0.5,nu2=1,mu2=1,
   colnames(ResMat) <- c('delta','sigma2','sigma2u',rownames(beta_hat))
   
   # Find and return approximate posteriors
-  pdf_s <- lapply(as.data.frame(ResMat),density)
+  #pdf_s <- lapply(as.data.frame(ResMat),density)
   
-  posteriors <- lapply(pdf_s,function(x){approxfun(x$y,x$x, rule = 2)})
+  #posteriors <- lapply(pdf_s,function(x){approxfun(x$y,x$x, rule = 2)})
   
   res <- list(Mean = colMeans(ResMat),
               Quantiles = apply(ResMat,2,quantile,
