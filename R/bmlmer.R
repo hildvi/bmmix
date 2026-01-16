@@ -47,7 +47,7 @@
 #' sigma2u <- 0.5
 #' 
 #' delta <- w*sigma2u/(sigma2 + w*sigma2u)
-#' beta <- c(1,2,-0.5)#as.matrix(rnorm(p))
+#' beta <- c(0.2,2,-0.5)
 #' 
 #' ### Put parameters in one vector
 #' par_vec <- c(delta,sigma2,sigma2u,as.vector(beta))
@@ -85,9 +85,9 @@
 #'  
 #'   ### Get the result from Bayesian inference/ empirical Bayes
 #'   bmlmer_res <- bmlmer(mod_form = bmlmerform,data = mixdata,
-#'                        nsim = 5000,beta0=NULL,nu1 = 2,nu2 = 0.01,nu3 = 0.01,
+#'                        nsim = 5000,beta0=NULL,
 #'                        simreturn = FALSE,empirical_bayes = TRUE,
-#'                        nu_min = c(2,0,0),nu_max = c(2.0001,10,10))
+#'                        nu_min = c(2,0,0),nu_max = c(2.001,5,5))
 #'   
 #'   #print(bmlmer_res$eb_nu)
 #'   bayes_eval <- rbind(bayes_eval,

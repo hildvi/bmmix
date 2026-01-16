@@ -44,6 +44,10 @@ bm_evidence_max <- function(mu1=0.5,mu2=1,beta0=NULL,beta_hat,n,w,Q1,Q2,Mn,
   {
     if(any(nu<nu_min)&&any(nu>nu_max)){res <- -10^50
     }else{
+     beta_hat <- as.matrix(beta_hat)
+     beta0 <- as.matrix(beta0)
+     Mn <- as.matrix(Mn)
+     
      Q3 <- (nu[3]/(n+nu[3]))*t(beta_hat-beta0)%*%(n*Mn)%*%(beta_hat-beta0)
      kappa1 <- (Q1+Q2+2*nu[2]/mu2+w*Q3)/2
      kappa2 <- (Q2+w*Q3)/2
