@@ -7,29 +7,69 @@
 bmlmer(mod_formula, data, nu1,mu1,nu2,mu2,beta0,nu0,Upsilon0)
 }
 \arguments{
-\item{a}{bla bla}
+\item{mod_form}{a two-sided linear formula object describing both the
+fixed-effects and random-effects part of the model,
+with the response on the left of a ~ operator and the terms,
+separated by + operators, on the right.
+Random-effects terms are distinguished by vertical bars (|).
+So far only implemented for one grouping variable in a deign that
+has to be balanced.}
+
+\item{data}{a data frame containing the variables named in mod_form.}
+
+\item{nu1, mu1, nu2, mu2, beta0, nu3, Upsilon0.}{Prior hyper parameters, nu1, nu2 and
+nu3 are scalars with prior sample sizes for the beta, gamma and multivariate
+normal distributions respectively. mu1 (0<mu1<1) and mu2 are prior expectations
+for the beta and gamma distributions respectively. beta0 (length p) is prior
+expected value for fixed regression parameters and Upsilon0 (p x p)
+is prior variance for regression parameters up to proportionality.}
+
+\item{nsim}{number of independent simulations in the posterior distribution.}
+
+\item{alpha}{significance level for credibility intervals that are returned.}
+
+\item{simreturn}{logical. If the full simulations is to be returned}
+
+\item{empirical_bayes}{logical. If prior hyper-parameters is to be set via
+empirical Bayes strategy.}
+
+\item{nu_start, nu_max, nu_min}{optional. All vectors of length 3 setting start,
+minimum and maximum numbers for the three prior sizes (nu1, nu2, and nu3)
+if empirical Bayes is applied to set hyperparameters.}
 }
 \value{
-bla bla
+The function returns a list with elements:\cr
+\itemize{
+\item Mean: vector with posterior means for parameters\cr
+\item Quantiles: matrix with posterior quantiles for all parameters at
+levels alpha/2, 50\% (median) and 1-alpha/2, i.e. credibility intervals
+with median.\cr
+\item Covariance posterior covariance matrice for the parameters.\cr
+\item Correlation posterior covariance matrice for the parameters.\cr
+\item simulations (only returned if simreturn == TRUE), all simulated values.\cr
+\item eb_nu (only returned if empirical_bayes == TRUE), empirical Bayes results
+for prior means.\cr
+}
 }
 \description{
 Bayesian analysis of simple linear mixed-effects model (LMM) applied
 to balanced data, via a closed form posterior distribution.
 }
 \details{
-See Gangsei & Vinje ... for details.
+See Gangsei & Vinje (2026) for details.
 }
 \note{
-bla bla
+So far code and method is restricted to the simple, balanced design of
+the mixed model. Hopefully it will be possible to find a solution where the
+method is applicable for more complex mixed models.
 }
 \examples{
 \dontrun{
 ## Clean workspace
 rm(list = ls())  
 
-## Load the beta3ext and bmmix packages
+## Load the bmmix packages
 #devtools::install_git(url = 'https://github.com/hildvi/bmmix')
-
 
 require(bmmix)
 
@@ -47,7 +87,7 @@ sigma2 <- 4
 sigma2u <- 0.5
 
 delta <- w*sigma2u/(sigma2 + w*sigma2u)
-beta <- c(1,2,-0.5)#as.matrix(rnorm(p))
+beta <- c(0.2,2,-0.5)
 
 ### Put parameters in one vector
 par_vec <- c(delta,sigma2,sigma2u,as.vector(beta))
@@ -85,9 +125,9 @@ for(i in 1:nrep)
  
   ### Get the result from Bayesian inference/ empirical Bayes
   bmlmer_res <- bmlmer(mod_form = bmlmerform,data = mixdata,
-                       nsim = 5000,beta0=NULL,nu1 = 2,nu2 = 0.01,nu3 = 0.01,
+                       nsim = 5000,beta0=NULL,
                        simreturn = FALSE,empirical_bayes = TRUE,
-                       nu_min = c(2,0,0),nu_max = c(2.0001,10,10))
+                       nu_min = c(2,0,0),nu_max = c(2.001,5,5))
   
   #print(bmlmer_res$eb_nu)
   bayes_eval <- rbind(bayes_eval,
@@ -138,7 +178,7 @@ xtable::xtable(Tab1)
 
 }
 \references{
-Gangsei, L.E.& Vinje, H. 2025. A closed form solution for
+Gangsei, L.E.& Vinje, H. 2026. A closed form solution for
 Bayesian analysis of a simple linear mixed model.
 }
 \author{

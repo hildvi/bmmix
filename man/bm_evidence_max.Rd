@@ -7,20 +7,34 @@
 bm_evidence_max(mu1,mu2,beta0,n,w,Q1,Q2,Mn)
 }
 \arguments{
-\item{a}{bla bla}
+\item{mu1, mu2, beta0.}{Prior hyper parameters for expected values.
+mu1 (0<mu1<1) and mu2 are prior expectations
+for the beta and gamma distributions respectively. beta0 (length p) is prior
+expected value for fixed regression parameters.}
+
+\item{n, w}{integers, number of independent samples and number of replicates
+per sample respectively.}
+
+\item{Q1, Q2}{positive scalars. Quadratic sms from data.}
+
+\item{Mn}{positive definite matrix (p x p). Mn = X'X/n}
+
+\item{nu_start, nu_max, nu_min}{optional. All vectors of length 3 setting start,
+minimum and maximum numbers for the three prior sizes (nu1, nu2, and nu3)
+if empirical Bayes is applied to set hyperparameters.}
 }
 \value{
-bla bla
+The function returns a list of the same class as returned by function
+optim().
 }
 \description{
-Bayesian analysis of simple linear mixed-effects model (LMM) applied
-to balanced data, via a closed form posterior distribution.
+Function to set prior sample sizes based on maxiizing model evidence.
 }
 \details{
-See Gangsei & Vinje ... for details.
+See Gangsei & Vinje (2026) for details.
 }
 \note{
-bla bla, use function nlm()
+Uses function optim
 }
 \examples{
 \dontrun{
@@ -31,7 +45,7 @@ bla bla, use function nlm()
 
 }
 \references{
-Gangsei, L.E.& Vinje, H. 2025. A closed form solution for
+Gangsei, L.E.& Vinje, H. 2026. A closed form solution for
 Bayesian analysis of a simple linear mixed model.
 }
 \author{
