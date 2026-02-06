@@ -33,8 +33,8 @@
 #'        with median.\cr
 #' - Covariance posterior covariance matrice for the parameters.\cr
 #' - Correlation posterior covariance matrice for the parameters.\cr
-#' - simulations (only returned if simreturn == TRUE), all simulated values.\cr 
-#' - eb_nu (only returned if empirical_bayes == TRUE), empirical Bayes results
+#' - simulations (only returned if simreturn = TRUE), all simulated values.\cr 
+#' - eb_nu (only returned if empirical_bayes = TRUE), empirical Bayes results
 #'       for prior means.\cr
 #' 
 #' 
