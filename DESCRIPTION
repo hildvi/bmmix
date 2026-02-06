@@ -5,9 +5,9 @@ Version: 0.1.0
 Authors@R: c(
     person("Hilde", "Vinje", email = "hilde.vinje@nmbu.no", role = c("aut", "cre")),
     person("Lars Erik", "Gangsei", email = "lars.erik.gangsei@vetinst.no", role = "aut"))
-Description: Implements a closed-form Bayesian posterior for simple, 
-balanced mixed-effect linear regression models using the four-parameter 
-generalized beta density (G4B).
+Description: Provides a closed-form Bayesian posterior for simple, balanced
+  linear mixed-effects models based on the four-parameter generalized beta
+  distribution.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -19,5 +19,6 @@ Imports:
     graphics,
     gbeta,
     lme4,
-    mvtnorm
+    mvtnorm,
+    gsl
 URL: https://github.com/hildvi/bmmix
