@@ -19,6 +19,7 @@ Imports:
     graphics,
     gbeta,
     lme4,
+    reformulas,
     mvtnorm,
     gsl
 URL: https://github.com/hildvi/bmmix
