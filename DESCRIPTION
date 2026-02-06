@@ -1,14 +1,13 @@
 Package: bmmix
 Type: Package
-Title: Bayesian Mixed Models Using the Extended Beta of the Third Kind
+Title: Bayesian analyses of simple and balanced linear mixed-effects models
 Version: 0.1.0
 Authors@R: c(
     person("Hilde", "Vinje", email = "hilde.vinje@nmbu.no", role = c("aut", "cre")),
-    person("Lars Erik", "Gangsei", email = "lars.gangsei@nmbu.no", role = "aut"))
+    person("Lars Erik", "Gangsei", email = "lars.erik.gangsei@vetinst.no", role = "aut"))
 Description: Implements a closed-form Bayesian posterior for simple, 
-  balanced mixed-effect linear regression models using the Extended Beta 
-  Distribution of the Third Kind. The package includes tools for posterior 
-  evaluation and supports empirical Bayes strategies for setting hyperparameters.
+balanced mixed-effect linear regression models using the four-parameter 
+generalized beta density (G4B).
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
